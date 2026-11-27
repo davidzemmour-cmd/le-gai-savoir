@@ -3,7 +3,7 @@
 // la copie locale ne sert que si le reseau est coupe.
 // Les appels a Supabase ne sont jamais mis en cache.
 
-const CACHE = "gai-savoir-v3";
+const CACHE = "gai-savoir-v4";
 
 self.addEventListener("install", () => self.skipWaiting());
 
@@ -22,7 +22,10 @@ self.addEventListener("fetch", (ev) => {
   if (url.origin !== self.location.origin) return;
 
   ev.respondWith(
-    fetch(requete)
+    // cache: "no-cache" oblige le navigateur a verifier aupres du serveur
+    // qu'il n'existe pas de version plus recente (sinon GitHub Pages laisse
+    // le navigateur reutiliser une ancienne copie pendant 10 minutes).
+    fetch(requete.url, { cache: "no-cache" })
       .then((reponse) => {
         const copie = reponse.clone();
         caches.open(CACHE).then((c) => c.put(requete, copie));
