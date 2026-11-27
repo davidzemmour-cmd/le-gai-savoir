@@ -313,6 +313,12 @@ export async function inviterMembre(profilId) {
     "2. Ensuite, connecte-toi avec ton adresse " + r.email + " sur :\n" + location.origin + location.pathname + "\n\n" +
     "Sur téléphone, ajoute l'application à ton écran d'accueil depuis le menu du navigateur.";
 
+  // SMS : seulement sur telephone (un ordinateur n'a pas d'application SMS) ;
+  // l'iPhone et Android n'ecrivent pas le lien de la meme facon
+  const ua = navigator.userAgent;
+  const lienSms = /iPhone|iPad|iPod/i.test(ua) ? "sms:&body=" + encodeURIComponent(texte)
+    : /Android/i.test(ua) ? "sms:?body=" + encodeURIComponent(texte) : "";
+
   dialogue.innerHTML =
     '<h2 class="titre-main moyen">Invitation pour ' + echapper(r.prenom) + "</h2>" +
     "<p>Le lien est prêt. Envoyez-le à " + echapper(r.prenom) + " par le moyen de votre choix. " +
@@ -322,7 +328,7 @@ export async function inviterMembre(profilId) {
     (navigator.share ? '<button class="bouton plein" data-partager>Partager…</button>' : "") +
     '<a class="bouton" href="mailto:' + encodeURIComponent(r.email) + "?subject=" + encodeURIComponent(sujet) +
       "&body=" + encodeURIComponent(texte) + '">Email</a>' +
-    '<a class="bouton" href="sms:?body=' + encodeURIComponent(texte) + '">SMS</a>' +
+    (lienSms ? '<a class="bouton" href="' + lienSms + '">SMS</a>' : "") +
     '<button class="bouton" data-copier>Copier</button>' +
     '<button class="bouton rouge" data-fermer>Fermer</button>' +
     "</div>" +
