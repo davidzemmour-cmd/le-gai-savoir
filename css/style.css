@@ -127,6 +127,8 @@ button, input, select, textarea { font: inherit; }
   align-items: center;
   gap: 6px;
   font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
   box-shadow: 3px 3px 0 currentColor;
 }
 .action.lecon { color: var(--encre); }
@@ -242,6 +244,7 @@ button, input, select, textarea { font: inherit; }
   color: #64748B;
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .onglets a.actif { color: var(--encre); font-weight: 800; }
 

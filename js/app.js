@@ -154,7 +154,7 @@ function menus() {
   const liens = [
     { route: "accueil", libelle: "Accueil", icone: "accueil" },
     { route: "apprendre", libelle: "Apprendre", icone: "apprendre" },
-    { route: "parcours", libelle: "Mon parcours", icone: "parcours" },
+    { route: "parcours", libelle: "Parcours", icone: "parcours" },
     { route: "documents", libelle: "Mes cours", icone: "documents" },
   ];
   if (monProfil.est_parent) liens.push({ route: "parents", libelle: "Parents", icone: "parents" });
