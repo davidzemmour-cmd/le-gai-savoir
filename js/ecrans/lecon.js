@@ -5,7 +5,7 @@
 import { echapper } from "../outils.js";
 import {
   etat, miseEnPage, entete, markdown, figure, blocSources, libelleMatiere, libelleNiveau,
-  dateCourte, ecranAttente, ecranErreur,
+  dateCourte, ecranAttente, ecranErreur, boutonMessage, brancherBoutonMessage,
 } from "../commun.js";
 
 function avertissementVerification(id) {
@@ -22,6 +22,7 @@ function barreActions() {
     '<button class="bouton" data-action="imprimer">' +
     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
     'stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>Imprimer</button>' +
+    boutonMessage() +
     '<a class="bouton" href="#/apprendre">Nouvelle demande</a></div>';
 }
 
@@ -36,7 +37,7 @@ function brancherImpression() {
 export async function ecranLecon(id) {
   ecranAttente("apprendre");
   const { data: l, error } = await etat.supabase
-    .from("lecons").select("id, matiere_id, theme, niveau, contenu, sources, illustrations, date_creation")
+    .from("lecons").select("id, profil_id, matiere_id, theme, niveau, contenu, sources, illustrations, date_creation")
     .eq("id", id).maybeSingle();
   if (error || !l) return ecranErreur("apprendre", "Leçon introuvable", error ? error.message : "Cette leçon n'existe pas ou ne vous est pas accessible.");
 
@@ -61,6 +62,7 @@ export async function ecranLecon(id) {
     "</article>" +
     barreActions());
   brancherImpression();
+  brancherBoutonMessage({ type: "lecon", id: l.id, titre }, l.profil_id);
 }
 
 // ---------------------------------------------------------------------
@@ -72,7 +74,7 @@ const liste = (x) => (Array.isArray(x) ? x.filter((e) => e !== null && e !== und
 export async function ecranFiche(id) {
   ecranAttente("apprendre");
   const { data: f, error } = await etat.supabase
-    .from("fiches").select("id, matiere_id, theme, niveau, contenu, sources, illustrations, date_creation")
+    .from("fiches").select("id, profil_id, matiere_id, theme, niveau, contenu, sources, illustrations, date_creation")
     .eq("id", id).maybeSingle();
   if (error || !f) return ecranErreur("apprendre", "Fiche introuvable", error ? error.message : "Cette fiche n'existe pas ou ne vous est pas accessible.");
 
@@ -140,4 +142,5 @@ export async function ecranFiche(id) {
     "</article>" +
     barreActions());
   brancherImpression();
+  brancherBoutonMessage({ type: "fiche", id: f.id, titre: c.titre || f.theme }, f.profil_id);
 }

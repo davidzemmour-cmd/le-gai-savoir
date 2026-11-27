@@ -4,7 +4,7 @@
 
 import { SUPABASE_URL, SUPABASE_CLE_PUBLIQUE } from "./config.js";
 import { echapper, icone, LOGO_LIVRE, messageErreur } from "./outils.js";
-import { etat, racine, miseEnPage } from "./commun.js";
+import { etat, racine, miseEnPage, demarrerMessagerie, arreterMessagerie } from "./commun.js";
 
 // ---------------------------------------------------------------------
 // Demarrage
@@ -46,6 +46,7 @@ async function demarrer() {
     } else if (evenement === "SIGNED_OUT") {
       etat.profil = null;
       etat.matieres = null;
+      arreterMessagerie();
       afficher();
     }
   });
@@ -84,8 +85,12 @@ async function afficher() {
     }
   }
 
+  demarrerMessagerie();
+
   try {
     switch (route) {
+      case "messages":
+        return (await import("./ecrans/messages.js")).ecranMessages(parametre);
       case "apprendre":
         return (await import("./ecrans/apprendre.js")).ecranApprendre(parametre);
       case "lecon":

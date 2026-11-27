@@ -5,7 +5,7 @@
 // =====================================================================
 
 import { echapper } from "../outils.js";
-import { etat, miseEnPage, entete, ecranAttente, ecranErreur } from "../commun.js";
+import { etat, miseEnPage, entete, ecranAttente, ecranErreur, inviterMembre } from "../commun.js";
 
 const NIVEAUX = ["CP", "CE1", "CE2", "CM1", "CM2", "6e", "5e", "4e", "3e", "2nde", "1re", "Tle", "adulte"];
 
@@ -58,7 +58,9 @@ function dessiner(garderDefilement = false) {
       '<div class="ligne-reglage membre">' +
       '<div class="texte"><b>' + echapper(p.prenom) + "</b>" +
       '<span class="details">' + (p.est_parent ? "Parent" : "Enfant") + (p.email ? " · " + echapper(p.email) : "") +
-      (p.user_id ? "" : ' · <span class="a-terminer">compte pas encore créé</span>') + "</span></div>" +
+      (p.user_id ? "" : ' · <span class="a-terminer">compte pas encore créé</span>') + "</span>" +
+      (p.user_id || p.id === etat.profil.id ? "" : '<button type="button" class="bouton petit ocre bouton-inviter" data-inviter="' + p.id + '">Inviter ' + echapper(p.prenom) + "</button>") +
+      "</div>" +
       '<div class="commandes">' +
       '<select class="saisie petit" data-niveau="' + p.id + '" aria-label="Classe de ' + echapper(p.prenom) + '">' +
       NIVEAUX.map((n) => '<option value="' + n + '"' + (p.niveau === n ? " selected" : "") + ">" + (n === "adulte" ? "Adulte" : n) + "</option>").join("") +
@@ -135,6 +137,7 @@ async function maj(table, id, valeurs) {
 function brancher() {
   const tous = (sel, fn) => document.querySelectorAll(sel).forEach(fn);
 
+  tous("[data-inviter]", (b) => b.addEventListener("click", () => inviterMembre(b.dataset.inviter)));
   tous("[data-niveau]", (s) => s.addEventListener("change", () => changerNiveau(s.dataset.niveau, s.value)));
 
   tous("[data-controles]", (c) => c.addEventListener("change", async () => {

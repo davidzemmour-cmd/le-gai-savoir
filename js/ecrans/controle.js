@@ -5,7 +5,7 @@
 import { echapper } from "../outils.js";
 import {
   etat, miseEnPage, entete, figure, libelleMatiere, libelleNiveau, dateCourte,
-  appelerFonction, ecranAttente, ecranErreur,
+  appelerFonction, ecranAttente, ecranErreur, boutonMessage, brancherBoutonMessage,
 } from "../commun.js";
 
 // Corriges recus pendant la session (la bonne reponse n'est pas lisible ensuite)
@@ -106,6 +106,7 @@ function afficherCopie(c, enTete, questions, lectureSeule = false) {
       ? '<div class="message info">Ce contrôle n\'a pas encore été rendu : vous voyez le sujet, sans les réponses.</div>'
       : '<button type="submit" class="bouton plein grand-bouton rouge-plein" id="btnRendre">Rendre ma copie</button>') +
     '<button type="button" class="bouton" data-action="imprimer">' + ICONE_IMPRIMER + "Imprimer le sujet</button>" +
+    boutonMessage() +
     "</div>" +
     "</form></article>" +
     '<section id="secCorrection" class="progression" hidden></section>';
@@ -113,6 +114,7 @@ function afficherCopie(c, enTete, questions, lectureSeule = false) {
   miseEnPage("apprendre", html);
 
   document.querySelector('[data-action="imprimer"]').addEventListener("click", () => window.print());
+  brancherBoutonMessage({ type: "controle", id: c.id, titre: c.theme }, c.profil_id);
   if (lectureSeule) {
     document.querySelectorAll("#formCopie input, #formCopie textarea").forEach((el) => { el.disabled = true; });
     return;
@@ -249,8 +251,10 @@ function afficherCorrection(c, enTete, r, retour = "#/apprendre") {
     "</article>" +
     '<div class="barre-actions ne-pas-imprimer">' +
     '<button class="bouton" data-action="imprimer">' + ICONE_IMPRIMER + "Imprimer la copie corrigée</button>" +
+    boutonMessage() +
     '<a class="bouton" href="#/apprendre/controle">Nouveau contrôle</a></div>');
   document.querySelector('[data-action="imprimer"]').addEventListener("click", () => window.print());
+  brancherBoutonMessage({ type: "controle", id: c.id, titre: c.theme }, c.profil_id);
 }
 
 // ---------------------------------------------------------------------
@@ -282,6 +286,8 @@ async function afficherCopieCorrigeeEnregistree(c, enTete, questions) {
     }).join("") +
     "</article>" +
     '<div class="barre-actions ne-pas-imprimer">' +
-    '<button class="bouton" data-action="imprimer">' + ICONE_IMPRIMER + "Imprimer la copie corrigée</button></div>");
+    '<button class="bouton" data-action="imprimer">' + ICONE_IMPRIMER + "Imprimer la copie corrigée</button>" +
+    boutonMessage() + "</div>");
   document.querySelector('[data-action="imprimer"]').addEventListener("click", () => window.print());
+  brancherBoutonMessage({ type: "controle", id: c.id, titre: c.theme }, c.profil_id);
 }
