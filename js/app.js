@@ -76,6 +76,7 @@ async function afficher() {
       case "parcours":
         return (await import("./ecrans/parcours.js")).ecranParcours();
       case "documents":
+        return (await import("./ecrans/documents.js")).ecranDocuments();
       case "parents":
         return ecranBientot(route);
       case "accueil":
@@ -218,7 +219,7 @@ async function ecranAccueil() {
 }
 
 function ecranBientot(route) {
-  const titres = { documents: "Mes cours", parents: "Espace parents" };
+  const titres = { parents: "Espace parents" };
   miseEnPage(route,
     '<h1 class="titre-main grand">' + titres[route] + "</h1>" +
     '<section class="carte pointillee"><b>En construction</b><br>Cet écran arrive dans une prochaine étape.</section>');

@@ -532,6 +532,28 @@ button, input, select, textarea { font: inherit; }
 .moyenne-matiere .barre span { display: block; height: 100%; background: var(--encre); }
 .moyenne-matiere b { text-align: right; color: var(--rouge-fonce); }
 
+
+/* ---------- Mes cours ---------- */
+
+.ajout-cours { display: flex; flex-direction: column; gap: 8px; max-width: 680px; }
+.ajout-cours .question { font-weight: 800; font-size: 17px; }
+.question-petite { font-weight: 700; font-size: 14px; }
+.liste-cours { display: flex; flex-direction: column; gap: 10px; }
+.carte-cours { background: #FFFFFF; border: 1.5px solid var(--bordure); border-left: 5px solid var(--ocre); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.ligne-cours { display: flex; align-items: center; gap: 12px; }
+.ligne-cours .pictogramme { color: var(--ocre-fonce); display: flex; flex-shrink: 0; }
+.ligne-cours .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ligne-cours .titre { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-cours .details { font-size: 13px; color: var(--texte-doux); }
+.ligne-cours .etat { font-size: 12px; font-weight: 700; color: var(--ocre); }
+.ligne-cours .etat.ok { color: var(--vert); }
+.ligne-cours .etat.ko { color: var(--rouge-fonce); }
+.ligne-cours .supprimer { width: 44px; height: 44px; border: none; background: transparent; color: var(--rouge-fonce); cursor: pointer; border-radius: 8px; flex-shrink: 0; }
+.ligne-cours .supprimer:hover { background: var(--rouge-clair); }
+.actions-cours { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.actions-cours .saisie.petit { flex: 1 1 160px; }
+.texte-lu { white-space: pre-wrap; font-family: var(--corps); font-size: 14px; background: #FFFBEB; border: 1.5px dashed var(--ocre); border-radius: 8px; padding: 10px; margin: 0; max-height: 420px; overflow: auto; }
+
 /* ---------- Impression : on ne garde que le contenu ---------- */
 
 @media print {
