@@ -20,8 +20,25 @@ async function demarrer() {
     return;
   }
 
+  // Lien recu par email (invitation ou mot de passe oublie) : on le repere
+  // avant que Supabase ne lise puis efface l'adresse
+  const typeLien = new URLSearchParams(location.hash.replace(/^#/, "")).get("type");
+  const erreurLien = new URLSearchParams(location.hash.replace(/^#/, "")).get("error_description");
+
   const module = await import("./supabase.js");
   etat.supabase = module.supabase;
+  await etat.supabase.auth.getSession();
+
+  if (typeLien === "invite" || typeLien === "recovery") {
+    etat.bienvenue = typeLien === "invite";
+    history.replaceState(null, "", location.pathname + "#/nouveau-mot-de-passe");
+  } else if (erreurLien) {
+    history.replaceState(null, "", location.pathname + "#/accueil");
+    etat.messageConnexion = "Ce lien n'est plus valable (" + erreurLien.replace(/\+/g, " ") +
+      "). Utilisez « Mot de passe oublié ? » pour en recevoir un nouveau.";
+  } else if (location.hash.includes("access_token")) {
+    history.replaceState(null, "", location.pathname + "#/accueil");
+  }
 
   etat.supabase.auth.onAuthStateChange((evenement) => {
     if (evenement === "PASSWORD_RECOVERY") {
@@ -48,7 +65,11 @@ async function afficher() {
   const { data: { session } } = await etat.supabase.auth.getSession();
 
   if (route === "nouveau-mot-de-passe") return ecranNouveauMotDePasse();
-  if (!session) return ecranConnexion();
+  if (!session) {
+    const info = etat.messageConnexion || "";
+    etat.messageConnexion = "";
+    return ecranConnexion(info);
+  }
 
   if (!etat.profil) {
     try {
@@ -149,18 +170,30 @@ function ecranNouveauMotDePasse() {
   racine().innerHTML =
     '<main class="ecran-connexion papier">' +
     '<form class="boite" id="formNouveau" novalidate>' +
-    '<h1 class="titre-main moyen">Nouveau mot de passe</h1>' +
+    (etat.bienvenue
+      ? '<div>' + LOGO_LIVRE + '<h1 class="titre-main grand">Bienvenue !</h1>' +
+        '<p class="sous-titre">Choisissez votre mot de passe pour entrer dans Le Gai Savoir.</p></div>'
+      : '<h1 class="titre-main moyen">Nouveau mot de passe</h1>') +
     '<div class="message erreur" id="msgNouveau" hidden></div>' +
     '<div class="champ"><label for="txtNouveau">Choisissez un mot de passe (6 caractères au moins)</label>' +
     '<input id="txtNouveau" type="password" autocomplete="new-password" required></div>' +
+    '<div class="champ"><label for="txtConfirmation">Retapez-le</label>' +
+    '<input id="txtConfirmation" type="password" autocomplete="new-password" required></div>' +
     '<button class="bouton plein large" type="submit">Enregistrer</button>' +
     "</form></main>";
 
   document.getElementById("formNouveau").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const msg = document.getElementById("msgNouveau");
-    const { error } = await etat.supabase.auth.updateUser({ password: document.getElementById("txtNouveau").value });
-    if (error) { msg.textContent = messageErreur(error); msg.hidden = false; return; }
+    const motDePasse = document.getElementById("txtNouveau").value;
+    const montrer = (t) => { msg.textContent = t; msg.hidden = false; };
+    if (motDePasse.length < 6) return montrer("Le mot de passe doit contenir au moins 6 caractères.");
+    if (motDePasse !== document.getElementById("txtConfirmation").value) return montrer("Les deux mots de passe ne sont pas identiques.");
+    const { data: { session } } = await etat.supabase.auth.getSession();
+    if (!session) return montrer("Le lien reçu par email n'est plus valable. Demandez-en un nouveau avec « Mot de passe oublié ? ».");
+    const { error } = await etat.supabase.auth.updateUser({ password: motDePasse });
+    if (error) return montrer(messageErreur(error));
+    etat.bienvenue = false;
     location.hash = "#/accueil";
   });
 }
