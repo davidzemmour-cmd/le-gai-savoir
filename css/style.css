@@ -554,6 +554,22 @@ button, input, select, textarea { font: inherit; }
 .actions-cours .saisie.petit { flex: 1 1 160px; }
 .texte-lu { white-space: pre-wrap; font-family: var(--corps); font-size: 14px; background: #FFFBEB; border: 1.5px dashed var(--ocre); border-radius: 8px; padding: 10px; margin: 0; max-height: 420px; overflow: auto; }
 
+
+/* ---------- Espace parents ---------- */
+
+.onglets-membres { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.onglet-membre {
+  display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 14px 4px 6px;
+  border: 2px solid var(--bordure); background: #FFFFFF; border-radius: 999px;
+  font: 700 15px var(--corps); color: #334155; cursor: pointer; flex-shrink: 0;
+}
+.onglet-membre .pastille { width: 34px; height: 34px; font-size: 14px; }
+.onglet-membre.actif { border-color: var(--encre); background: var(--encre-claire); color: var(--encre); font-weight: 800; }
+.carte-membre { background: #FFFFFF; border: 1.5px solid var(--bordure); border-radius: 12px; padding: 12px 14px; max-width: 620px; }
+.carte-membre .identite { font-size: 16px; }
+.moyenne-matiere small { font-weight: 400; color: var(--texte-doux); }
+.moyenne-matiere.faible .barre span { background: var(--rouge-fonce); }
+
 /* ---------- Impression : on ne garde que le contenu ---------- */
 
 @media print {

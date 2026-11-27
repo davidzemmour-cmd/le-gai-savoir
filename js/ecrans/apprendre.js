@@ -31,6 +31,7 @@ export async function ecranApprendre(typeDemande) {
     if (pre.theme !== undefined) choix.theme = pre.theme;
     choix.documents.clear();
     for (const id of pre.documents ?? []) choix.documents.add(id);
+    if (pre.niveau && p.est_parent) choix.niveau = pre.niveau;
   }
   if (choix.type === "controle" && !p.controles_actifs) choix.type = "lecon";
   if (!choix.niveau) choix.niveau = p.niveau;

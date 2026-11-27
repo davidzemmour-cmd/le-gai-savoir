@@ -78,7 +78,7 @@ async function afficher() {
       case "documents":
         return (await import("./ecrans/documents.js")).ecranDocuments();
       case "parents":
-        return ecranBientot(route);
+        return (await import("./ecrans/parents.js")).ecranParents();
       case "accueil":
       default:
         return ecranAccueil();
@@ -216,13 +216,6 @@ async function ecranAccueil() {
   } catch (e) {
     zone.innerHTML = "";
   }
-}
-
-function ecranBientot(route) {
-  const titres = { parents: "Espace parents" };
-  miseEnPage(route,
-    '<h1 class="titre-main grand">' + titres[route] + "</h1>" +
-    '<section class="carte pointillee"><b>En construction</b><br>Cet écran arrive dans une prochaine étape.</section>');
 }
 
 // ---------------------------------------------------------------------

@@ -59,7 +59,7 @@ export async function ecranControle(id) {
     }
     return afficherCopieCorrigeeEnregistree(c, enTete, questions ?? []);
   }
-  return afficherCopie(c, enTete, questions ?? []);
+  return afficherCopie(c, enTete, questions ?? [], c.profil_id !== etat.profil.id);
 }
 
 // ---------------------------------------------------------------------
@@ -72,8 +72,8 @@ function verificationNonFaite(id) {
   return v === "0";
 }
 
-function afficherCopie(c, enTete, questions) {
-  const brouillon = lireBrouillon(c.id);
+function afficherCopie(c, enTete, questions, lectureSeule = false) {
+  const brouillon = lectureSeule ? {} : lireBrouillon(c.id);
 
   const html =
     entete("Contrôle", "#/apprendre") +
@@ -102,7 +102,9 @@ function afficherCopie(c, enTete, questions) {
     }).join("") +
     '<div class="message erreur" id="msgCopie" hidden></div>' +
     '<div class="barre-actions ne-pas-imprimer">' +
-    '<button type="submit" class="bouton plein grand-bouton rouge-plein" id="btnRendre">Rendre ma copie</button>' +
+    (lectureSeule
+      ? '<div class="message info">Ce contrôle n\'a pas encore été rendu : vous voyez le sujet, sans les réponses.</div>'
+      : '<button type="submit" class="bouton plein grand-bouton rouge-plein" id="btnRendre">Rendre ma copie</button>') +
     '<button type="button" class="bouton" data-action="imprimer">' + ICONE_IMPRIMER + "Imprimer le sujet</button>" +
     "</div>" +
     "</form></article>" +
@@ -110,11 +112,16 @@ function afficherCopie(c, enTete, questions) {
 
   miseEnPage("apprendre", html);
 
+  document.querySelector('[data-action="imprimer"]').addEventListener("click", () => window.print());
+  if (lectureSeule) {
+    document.querySelectorAll("#formCopie input, #formCopie textarea").forEach((el) => { el.disabled = true; });
+    return;
+  }
+
   // Brouillon : les reponses sont gardees si l'on quitte la page
   const sauver = () => ecrireBrouillon(c.id, lireReponses(questions));
   document.getElementById("formCopie").addEventListener("input", sauver);
   document.getElementById("formCopie").addEventListener("change", sauver);
-  document.querySelector('[data-action="imprimer"]').addEventListener("click", () => window.print());
   document.getElementById("formCopie").addEventListener("submit", (e) => { e.preventDefault(); rendre(c, enTete, questions); });
 }
 

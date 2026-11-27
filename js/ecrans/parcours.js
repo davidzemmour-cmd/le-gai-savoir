@@ -34,9 +34,9 @@ function dateRelative(iso) {
 // Chargement des donnees du profil connecte
 // ---------------------------------------------------------------------
 
-export async function chargerParcours() {
+export async function chargerParcours(profilId = etat.profil.id) {
   const sb = etat.supabase;
-  const id = etat.profil.id;
+  const id = profilId;
   const matieres = await chargerMatieres();
   const parId = Object.fromEntries(matieres.map((m) => [m.id, m]));
 
@@ -91,22 +91,23 @@ export function ligneElement(e) {
     droite + "</a>";
 }
 
-export function ligneNotion(n) {
+export function ligneNotion(n, libelleBouton = "Réviser") {
   return '<div class="notion-a-revoir">' +
     '<div class="texte"><span class="titre">' + echapper(n.notion) + "</span>" +
     '<span class="details">' + echapper(n.matiere) + " · " + n.taux + " % de réussite</span>" +
     '<span class="barre"><span style="width:' + Math.max(3, Math.min(100, n.taux)) + '%"></span></span></div>' +
-    '<button class="bouton petit" data-reviser="' + echapper(n.matiere_code) + '" data-notion="' + echapper(n.notion) + '">Réviser</button>' +
+    '<button class="bouton petit" data-reviser="' + echapper(n.matiere_code) + '" data-notion="' + echapper(n.notion) + '">' + libelleBouton + "</button>" +
     "</div>";
 }
 
 // Bouton "Reviser" : ouvre une nouvelle demande pre-remplie
-export function brancherReviser() {
+export function brancherReviser(niveau) {
   document.querySelectorAll("[data-reviser]").forEach((b) => b.addEventListener("click", () => {
     etat.preselection = {
       type: etat.profil.controles_actifs ? "controle" : "fiche",
       matiere: b.dataset.reviser,
       theme: b.dataset.notion,
+      niveau,
     };
     location.hash = "#/apprendre";
   }));
