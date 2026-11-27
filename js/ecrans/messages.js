@@ -66,7 +66,7 @@ export async function ecranMessages(cle) {
   if (cle) return ecranConversation(cle);
 
   const { data, error } = await etat.supabase
-    .from("messages").select("id, auteur_id, texte, lien_type, conversation, date_creation")
+    .from("messages_famille").select("id, auteur_id, texte, lien_type, conversation, date_creation")
     .eq("famille_id", etat.profil.famille_id)
     .order("date_creation", { ascending: false }).limit(300);
   if (error) {
@@ -139,7 +139,7 @@ async function ecranConversation(cle) {
   }
 
   const { data, error } = await etat.supabase
-    .from("messages").select("id, auteur_id, texte, lien_type, lien_id, lien_titre, date_creation")
+    .from("messages_famille").select("id, auteur_id, texte, lien_type, lien_id, lien_titre, date_creation")
     .eq("famille_id", etat.profil.famille_id).eq("conversation", cle)
     .order("date_creation", { ascending: false }).limit(200);
   if (error) return ecranErreur("messages", "Messagerie indisponible", error.message);
@@ -232,7 +232,7 @@ async function ecranConversation(cle) {
     const bouton = document.getElementById("btnEnvoyer");
     bouton.disabled = true;
     const l = etat.brouillonLien;
-    const { data: envoye, error: eEnvoi } = await etat.supabase.from("messages").insert({
+    const { data: envoye, error: eEnvoi } = await etat.supabase.from("messages_famille").insert({
       famille_id: etat.profil.famille_id,
       auteur_id: moi,
       destinataire_id: autreId,

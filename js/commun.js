@@ -242,7 +242,7 @@ export function demarrerMessagerie() {
   etat.canalMessages = etat.supabase
     .channel("messages-famille")
     .on("postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages", filter: "famille_id=eq." + etat.profil.famille_id },
+      { event: "INSERT", schema: "public", table: "messages_famille", filter: "famille_id=eq." + etat.profil.famille_id },
       (charge) => {
         const m = charge.new;
         let traite = false;
