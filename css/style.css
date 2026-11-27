@@ -1,0 +1,293 @@
+/* =====================================================================
+   Le Gai Savoir — style « cahier d'écolier »
+   ===================================================================== */
+
+:root {
+  --encre: #1E3A8A;
+  --encre-foncee: #172554;
+  --encre-claire: #DBEAFE;
+  --rouge: #C0392B;
+  --rouge-fonce: #B91C1C;
+  --rouge-clair: #FEE2E2;
+  --ocre: #B45309;
+  --ocre-fonce: #92400E;
+  --ocre-clair: #FEF3C7;
+  --vert: #15803D;
+  --papier: #FFFDF7;
+  --texte: #1F2A44;
+  --texte-doux: #475569;
+  --bordure: #CBD5E1;
+  --marge: #E57373;
+  --titre: "Caveat", cursive;
+  --corps: "Nunito", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  font-family: var(--corps);
+  color: var(--texte);
+  background: var(--papier);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+a { color: var(--encre); }
+a:hover { color: var(--encre-foncee); }
+
+button, input, select, textarea { font: inherit; }
+
+/* Papier Seyès : grands carreaux + marge rouge */
+.papier {
+  background-color: var(--papier);
+  background-image:
+    linear-gradient(90deg, transparent 47px, var(--marge) 47px, var(--marge) 49px, transparent 49px),
+    repeating-linear-gradient(180deg, transparent 0, transparent 31px, #B9C9EE 31px, #B9C9EE 32px),
+    repeating-linear-gradient(180deg, transparent 0, transparent 7px, #E3EAF8 7px, #E3EAF8 8px);
+}
+
+.chargement-initial {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--titre);
+  font-size: 32px;
+  color: var(--encre);
+}
+
+/* ---------- Titres manuscrits ---------- */
+
+.titre-main {
+  font-family: var(--titre);
+  font-weight: 700;
+  color: var(--encre);
+  line-height: 1;
+  margin: 0;
+}
+.titre-main.grand { font-size: 44px; }
+.titre-main.moyen { font-size: 30px; }
+.titre-main.rouge { color: var(--rouge-fonce); }
+
+.sous-titre { color: var(--texte-doux); margin: 4px 0 0; }
+
+/* ---------- Boutons ---------- */
+
+.bouton {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 2px solid var(--encre);
+  background: #FFFFFF;
+  color: var(--encre);
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.bouton:hover { background: #F1F5FF; }
+.bouton:disabled { opacity: 0.5; cursor: default; }
+.bouton.plein { background: var(--encre); color: #FFFFFF; box-shadow: 3px 3px 0 #0F1E4A; }
+.bouton.plein:hover { background: var(--encre-foncee); }
+.bouton.rouge { border-color: var(--rouge-fonce); color: var(--rouge-fonce); }
+.bouton.ocre { border-color: var(--ocre); color: var(--ocre-fonce); }
+.bouton.large { width: 100%; }
+
+.lien-bouton {
+  background: none;
+  border: none;
+  color: var(--encre);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 8px 0;
+  min-height: 44px;
+  font-weight: 700;
+}
+
+/* Les trois grandes actions de l'accueil */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.action {
+  text-decoration: none;
+  background: #FFFFFF;
+  border: 2px solid currentColor;
+  border-radius: 14px;
+  padding: 14px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  box-shadow: 3px 3px 0 currentColor;
+}
+.action.lecon { color: var(--encre); }
+.action.fiche { color: var(--ocre-fonce); }
+.action.controle { color: var(--rouge-fonce); }
+
+/* ---------- Champs ---------- */
+
+.champ { display: flex; flex-direction: column; gap: 6px; }
+.champ label { font-weight: 800; }
+.champ input {
+  min-height: 48px;
+  border: 2px solid var(--encre);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  color: var(--texte);
+}
+.champ input:focus { outline: 3px solid #93C5FD; outline-offset: 1px; }
+
+.message { border-radius: 10px; padding: 10px 12px; font-weight: 700; font-size: 15px; }
+.message.erreur { background: var(--rouge-clair); color: var(--rouge-fonce); }
+.message.info { background: var(--encre-claire); color: var(--encre); }
+
+/* ---------- Cartes ---------- */
+
+.carte {
+  background: #FFFFFF;
+  border: 1.5px solid var(--bordure);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.carte.pointillee { background: #FFF6F5; border: 2px dashed var(--rouge); }
+
+/* ---------- Écran de connexion ---------- */
+
+.ecran-connexion {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px 24px 64px;
+}
+.ecran-connexion .boite {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.logo-livre { width: 72px; height: 72px; }
+
+/* ---------- Mise en page générale ---------- */
+
+.mise-en-page { min-height: 100vh; display: flex; }
+
+.menu-lateral { display: none; }
+
+.contenu {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 20px 100px 64px;
+}
+.contenu-interieur {
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.entete-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.entete-mobile .nom-app { font-family: var(--titre); font-size: 30px; font-weight: 700; color: var(--encre); }
+
+.pastille {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #FDE7C8;
+  border: 2px solid var(--encre);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--encre);
+}
+
+/* Barre d'onglets en bas (téléphone) */
+.onglets {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: #FFFFFF;
+  border-top: 2px solid var(--encre);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  padding: 6px 4px calc(10px + env(safe-area-inset-bottom));
+}
+.onglets a {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 44px;
+  color: #64748B;
+  font-size: 12px;
+  font-weight: 700;
+}
+.onglets a.actif { color: var(--encre); font-weight: 800; }
+
+/* Ordinateur : menu à gauche, plus de barre d'onglets */
+@media (min-width: 900px) {
+  .onglets, .entete-mobile { display: none; }
+  .menu-lateral {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 250px;
+    flex-shrink: 0;
+    background: #FFFFFF;
+    border-right: 2px solid var(--encre);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .menu-lateral .nom-app { font-family: var(--titre); font-size: 36px; font-weight: 700; color: var(--encre); padding-left: 8px; }
+  .menu-lateral nav { display: flex; flex-direction: column; gap: 4px; }
+  .menu-lateral nav a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #334155;
+  }
+  .menu-lateral nav a:hover { background: #EEF2FF; }
+  .menu-lateral nav a.actif { background: var(--encre-claire); color: var(--encre); font-weight: 800; }
+  .menu-lateral .profil { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 8px; }
+  .contenu { padding: 36px 48px 48px 64px; }
+  .titre-main.grand { font-size: 56px; }
+  .actions { max-width: 620px; }
+}
+
+/* ---------- Impression : on ne garde que le contenu ---------- */
+
+@media print {
+  .onglets, .menu-lateral, .entete-mobile, .ne-pas-imprimer { display: none !important; }
+  body, .papier { background: #FFFFFF !important; }
+  .contenu { padding: 0 0 0 40px; border-left: 2px solid var(--marge); }
+  .mise-en-page { display: block; }
+  a { color: inherit; text-decoration: none; }
+}
