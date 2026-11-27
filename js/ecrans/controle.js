@@ -48,6 +48,15 @@ export async function ecranControle(id) {
 
   if (c.statut === "termine") {
     if (corrigesRecus[id]) return afficherCorrection(c, enTete, corrigesRecus[id]);
+    // Corrige complet lu sur le serveur (fonction corrige_controle, script 08)
+    const { data: corrections, error: ecor } = await sb.rpc("corrige_controle", { p_controle: id });
+    if (!ecor && Array.isArray(corrections)) {
+      return afficherCorrection(c, enTete, {
+        note_sur_20: c.note_sur_20,
+        corrections,
+        bilan_par_notion: calculerBilan(corrections),
+      }, "#/parcours");
+    }
     return afficherCopieCorrigeeEnregistree(c, enTete, questions ?? []);
   }
   return afficherCopie(c, enTete, questions ?? []);
@@ -197,10 +206,21 @@ function bilanHtml(bilan) {
     "</section>";
 }
 
-function afficherCorrection(c, enTete, r) {
+function calculerBilan(corrections) {
+  const bilan = {};
+  for (const q of corrections) {
+    const n = q.notion || "Sans notion";
+    const b = bilan[n] ?? (bilan[n] = { notion: n, points_obtenus: 0, points_max: 0 });
+    b.points_obtenus += Number(q.points_obtenus ?? 0);
+    b.points_max += Number(q.points ?? 0);
+  }
+  return Object.values(bilan).map((b) => ({ ...b, taux_reussite: b.points_max ? Math.round((b.points_obtenus / b.points_max) * 100) : 0 }));
+}
+
+function afficherCorrection(c, enTete, r, retour = "#/apprendre") {
   const corrections = Array.isArray(r.corrections) ? r.corrections : [];
   miseEnPage("apprendre",
-    entete("Contrôle corrigé", "#/apprendre") +
+    entete("Contrôle corrigé", retour) +
     '<article class="document-imprimable controle copie-corrigee">' +
     enTete +
     '<div class="note-finale">' + nombre(r.note_sur_20) + "<span> / 20</span></div>" +
@@ -211,6 +231,7 @@ function afficherCorrection(c, enTete, r) {
         '<div class="entete-question"><span class="numero">' + q.ordre + ".</span>" +
         '<span class="points obtenus">' + nombre(q.points_obtenus) + " / " + nombre(q.points) + "</span></div>" +
         '<p class="enonce">' + echapper(q.enonce) + "</p>" +
+        figure(q.illustration) +
         '<div class="votre-reponse"><b>Votre réponse :</b> ' +
         (String(q.reponse_donnee ?? "").trim() ? echapper(q.reponse_donnee) : "<i>pas de réponse</i>") + "</div>" +
         (q.justification ? '<div class="remarque-prof">' + echapper(q.justification) + "</div>" : "") +

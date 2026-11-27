@@ -11,6 +11,7 @@ export const etat = {
   supabase: null,
   profil: null,
   matieres: null,
+  preselection: null, // demande pre-remplie (ex. "S'entrainer" sur une notion)
 };
 
 export const racine = () => document.getElementById("app");
@@ -30,7 +31,8 @@ function menus() {
   return liens;
 }
 
-export function miseEnPage(routeActive, contenuHtml) {
+export function miseEnPage(routeActive, contenuHtml, options = {}) {
+  const defilement = window.scrollY;
   const p = etat.profil;
   const liens = menus();
   const initiale = echapper(p.prenom.charAt(0).toUpperCase());
@@ -57,7 +59,7 @@ export function miseEnPage(routeActive, contenuHtml) {
 
   racine().querySelectorAll('[data-action="deconnexion"]').forEach((b) =>
     b.addEventListener("click", () => etat.supabase.auth.signOut()));
-  window.scrollTo(0, 0);
+  if (options.garderDefilement) window.scrollTo(0, defilement); else window.scrollTo(0, 0);
 }
 
 // En-tete d'un ecran interieur : fleche de retour + titre manuscrit

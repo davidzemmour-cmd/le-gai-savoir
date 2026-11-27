@@ -23,6 +23,14 @@ let enCours = false;
 export async function ecranApprendre(typeDemande) {
   const p = etat.profil;
   if (typeDemande && TYPES[typeDemande]) choix.type = typeDemande;
+  if (etat.preselection) {
+    const pre = etat.preselection;
+    etat.preselection = null;
+    if (pre.type && TYPES[pre.type]) choix.type = pre.type;
+    if (pre.matiere) choix.matiere = pre.matiere;
+    if (pre.theme !== undefined) choix.theme = pre.theme;
+    choix.documents.clear();
+  }
   if (choix.type === "controle" && !p.controles_actifs) choix.type = "lecon";
   if (!choix.niveau) choix.niveau = p.niveau;
 

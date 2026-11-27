@@ -74,6 +74,7 @@ async function afficher() {
       case "controle":
         return (await import("./ecrans/controle.js")).ecranControle(parametre);
       case "parcours":
+        return (await import("./ecrans/parcours.js")).ecranParcours();
       case "documents":
       case "parents":
         return ecranBientot(route);
@@ -166,7 +167,7 @@ function ecranNouveauMotDePasse() {
 // Ecran : accueil (version minimale, enrichie aux etapes suivantes)
 // ---------------------------------------------------------------------
 
-function ecranAccueil() {
+async function ecranAccueil() {
   const p = etat.profil;
   const niveau = p.niveau === "adulte" ? "Adulte" : "Classe de " + p.niveau;
   miseEnPage("accueil",
@@ -181,14 +182,43 @@ function ecranAccueil() {
       ? '<a class="action controle" href="#/apprendre/controle">' + icone("controle", 28) + "Un contrôle</a>"
       : "") +
     "</section>" +
-    '<section class="carte pointillee"><b>Bientôt ici</b><br>' +
-    "Vos derniers contrôles, les notions à revoir et vos leçons récentes.</section>" +
-    '<button class="bouton rouge ne-pas-imprimer" data-action="deconnexion" style="align-self:flex-start">' +
-    icone("sortie", 20) + "Se déconnecter</button>");
+    '<div id="zoneAccueil" class="accueil-suite"></div>');
+
+  const zone = document.getElementById("zoneAccueil");
+  try {
+    const parcours = await import("./ecrans/parcours.js");
+    const d = await parcours.chargerParcours();
+    if (!document.body.contains(zone)) return; // l'utilisateur a change d'ecran entre-temps
+
+    const enCours = d.elements.filter((e) => e.type === "controle" && e.statut !== "termine").slice(0, 2);
+    const recents = d.elements.filter((e) => !enCours.includes(e)).slice(0, 4);
+    let html = "";
+    if (enCours.length) {
+      html += '<section class="bloc-parcours"><h2>À terminer</h2><div class="liste-elements">' +
+        enCours.map(parcours.ligneElement).join("") + "</div></section>";
+    }
+    if (d.aRevoir.length) {
+      html += '<section class="bloc-parcours"><h2>Notions à revoir</h2><div class="liste-notions">' +
+        d.aRevoir.slice(0, 3).map(parcours.ligneNotion).join("") + "</div></section>";
+    }
+    if (recents.length) {
+      html += '<section class="bloc-parcours"><h2>Récemment</h2><div class="liste-elements">' +
+        recents.map(parcours.ligneElement).join("") + "</div>" +
+        '<a class="lien-suite" href="#/parcours">Voir tout mon parcours</a></section>';
+    }
+    if (!html) {
+      html = '<section class="carte pointillee"><b>Bienvenue !</b><br>' +
+        "Choisissez ci-dessus une leçon, une fiche ou un contrôle. Vos travaux apparaîtront ensuite ici.</section>";
+    }
+    zone.innerHTML = html;
+    parcours.brancherReviser();
+  } catch (e) {
+    zone.innerHTML = "";
+  }
 }
 
 function ecranBientot(route) {
-  const titres = { parcours: "Mon parcours", documents: "Mes cours", parents: "Espace parents" };
+  const titres = { documents: "Mes cours", parents: "Espace parents" };
   miseEnPage(route,
     '<h1 class="titre-main grand">' + titres[route] + "</h1>" +
     '<section class="carte pointillee"><b>En construction</b><br>Cet écran arrive dans une prochaine étape.</section>');

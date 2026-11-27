@@ -472,6 +472,66 @@ button, input, select, textarea { font: inherit; }
 .ligne-bilan.faible .barre span { background: var(--rouge-fonce); }
 .ligne-bilan .score { text-align: right; font-weight: 800; }
 
+
+/* ---------- Parcours et accueil ---------- */
+
+.accueil-suite { display: flex; flex-direction: column; gap: 22px; }
+.bloc-parcours { display: flex; flex-direction: column; gap: 10px; max-width: 820px; }
+.bloc-parcours h2 { font-family: var(--titre); font-size: 32px; color: var(--rouge-fonce); margin: 0; line-height: 1; }
+.lien-suite { font-weight: 800; align-self: flex-start; padding: 6px 0; }
+
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 620px; }
+.stat {
+  background: #FFFFFF; border: 2px solid currentColor; border-radius: 14px; padding: 10px 8px;
+  display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 3px 3px 0 currentColor;
+}
+.stat.controle { color: var(--rouge-fonce); }
+.stat.lecon { color: var(--encre); }
+.stat.fiche { color: var(--ocre-fonce); }
+.stat .valeur { font-family: var(--titre); font-size: 40px; line-height: 1; font-weight: 700; }
+.stat .libelle { font-size: 12px; font-weight: 700; color: var(--texte-doux); }
+
+.filtres { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pastille-choix.petit { min-height: 40px; padding: 4px 14px; font-size: 14px; }
+.saisie.petit { min-height: 40px; width: auto; max-width: 100%; font-size: 14px; }
+
+.liste-elements, .liste-notions { display: flex; flex-direction: column; gap: 8px; }
+.element {
+  display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--texte);
+  background: #FFFFFF; border: 1.5px solid var(--bordure); border-left: 5px solid currentColor;
+  border-radius: 10px; padding: 10px 12px; min-height: 56px;
+}
+.element:hover { background: #F8FAFF; }
+.element.lecon { border-left-color: var(--encre); }
+.element.fiche { border-left-color: var(--ocre); }
+.element.controle { border-left-color: var(--rouge-fonce); }
+.element .pictogramme { color: var(--encre); display: flex; flex-shrink: 0; }
+.element.fiche .pictogramme { color: var(--ocre-fonce); }
+.element.controle .pictogramme { color: var(--rouge-fonce); }
+.element .texte, .notion-a-revoir .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.element .titre, .notion-a-revoir .titre { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.element .details, .notion-a-revoir .details { font-size: 13px; color: var(--texte-doux); }
+.note-entouree {
+  font-family: var(--titre); font-size: 26px; font-weight: 700; color: var(--rouge-fonce);
+  border: 2px solid var(--rouge-fonce); border-radius: 50%; min-width: 52px; height: 44px;
+  display: flex; align-items: center; justify-content: center; padding: 0 6px; transform: rotate(-4deg); flex-shrink: 0;
+}
+.a-terminer { font-size: 12px; font-weight: 800; color: var(--ocre-fonce); background: var(--ocre-clair); border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
+
+.notion-a-revoir {
+  display: flex; align-items: center; gap: 12px; background: #FFF6F5;
+  border: 1.5px solid #FECACA; border-radius: 10px; padding: 10px 12px;
+}
+.notion-a-revoir .barre, .moyenne-matiere .barre { height: 8px; background: #E2E8F0; border-radius: 999px; overflow: hidden; margin-top: 4px; }
+.notion-a-revoir .barre span { display: block; height: 100%; background: var(--rouge-fonce); }
+.bouton.petit { min-height: 44px; padding: 0 14px; font-size: 14px; flex-shrink: 0; }
+
+.moyennes { display: flex; flex-direction: column; gap: 6px; background: #FFFFFF; border: 1.5px solid var(--bordure); border-radius: 12px; padding: 12px 14px; }
+.moyenne-matiere { display: grid; grid-template-columns: minmax(0, 1fr) 90px 40px; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; }
+.moyenne-matiere .barre { margin-top: 0; }
+.moyenne-matiere .barre span { display: block; height: 100%; background: var(--encre); }
+.moyenne-matiere b { text-align: right; color: var(--rouge-fonce); }
+
 /* ---------- Impression : on ne garde que le contenu ---------- */
 
 @media print {
