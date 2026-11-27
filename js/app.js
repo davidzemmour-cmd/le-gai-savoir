@@ -1,13 +1,10 @@
 // =====================================================================
-// Le Gai Savoir - application principale (navigation, session, ecrans)
+// Le Gai Savoir - application principale (demarrage, session, aiguillage)
 // =====================================================================
 
 import { SUPABASE_URL, SUPABASE_CLE_PUBLIQUE } from "./config.js";
 import { echapper, icone, LOGO_LIVRE, messageErreur } from "./outils.js";
-
-const racine = document.getElementById("app");
-let supabase = null;
-let monProfil = null;
+import { etat, racine, miseEnPage } from "./commun.js";
 
 // ---------------------------------------------------------------------
 // Demarrage
@@ -15,7 +12,7 @@ let monProfil = null;
 
 async function demarrer() {
   if (SUPABASE_URL.startsWith("A_REMPLACER") || SUPABASE_CLE_PUBLIQUE.startsWith("A_REMPLACER")) {
-    racine.innerHTML =
+    racine().innerHTML =
       '<div class="ecran-connexion papier"><div class="boite carte">' +
       '<h1 class="titre-main moyen">Configuration à compléter</h1>' +
       "<p>L'adresse du projet Supabase et la clé publique ne sont pas encore renseignées dans <b>js/config.js</b>.</p>" +
@@ -24,13 +21,14 @@ async function demarrer() {
   }
 
   const module = await import("./supabase.js");
-  supabase = module.supabase;
+  etat.supabase = module.supabase;
 
-  supabase.auth.onAuthStateChange((evenement) => {
+  etat.supabase.auth.onAuthStateChange((evenement) => {
     if (evenement === "PASSWORD_RECOVERY") {
       location.hash = "#/nouveau-mot-de-passe";
     } else if (evenement === "SIGNED_OUT") {
-      monProfil = null;
+      etat.profil = null;
+      etat.matieres = null;
       afficher();
     }
   });
@@ -40,33 +38,51 @@ async function demarrer() {
 }
 
 // ---------------------------------------------------------------------
-// Aiguillage des ecrans
+// Aiguillage des ecrans : #/ecran/parametre
 // ---------------------------------------------------------------------
 
 async function afficher() {
-  const route = (location.hash || "#/accueil").slice(2);
-  const { data: { session } } = await supabase.auth.getSession();
+  const morceaux = (location.hash || "#/accueil").slice(2).split("/");
+  const route = morceaux[0] || "accueil";
+  const parametre = morceaux[1] || "";
+  const { data: { session } } = await etat.supabase.auth.getSession();
 
   if (route === "nouveau-mot-de-passe") return ecranNouveauMotDePasse();
   if (!session) return ecranConnexion();
 
-  if (!monProfil) {
+  if (!etat.profil) {
     try {
       const module = await import("./supabase.js");
-      monProfil = await module.chargerMonProfil();
+      etat.profil = await module.chargerMonProfil();
     } catch (e) {
       return ecranMessage("Profil introuvable", messageErreur(e));
     }
-    if (!monProfil) {
+    if (!etat.profil) {
       return ecranMessage("Profil introuvable",
         "Votre compte existe, mais il n'est rattaché à aucun profil de la famille. Demandez à un parent de vous ajouter.");
     }
   }
 
-  switch (route) {
-    case "accueil":
-    default:
-      return ecranAccueil();
+  try {
+    switch (route) {
+      case "apprendre":
+        return (await import("./ecrans/apprendre.js")).ecranApprendre(parametre);
+      case "lecon":
+        return (await import("./ecrans/lecon.js")).ecranLecon(parametre);
+      case "fiche":
+        return (await import("./ecrans/lecon.js")).ecranFiche(parametre);
+      case "controle":
+        return (await import("./ecrans/controle.js")).ecranControle(parametre);
+      case "parcours":
+      case "documents":
+      case "parents":
+        return ecranBientot(route);
+      case "accueil":
+      default:
+        return ecranAccueil();
+    }
+  } catch (e) {
+    return ecranMessage("Erreur", "Cet écran n'a pas pu s'afficher : " + (e.message ?? e));
   }
 }
 
@@ -75,7 +91,7 @@ async function afficher() {
 // ---------------------------------------------------------------------
 
 function ecranConnexion(info = "") {
-  racine.innerHTML =
+  racine().innerHTML =
     '<main class="ecran-connexion papier">' +
     '<form class="boite" id="formConnexion" novalidate>' +
     "<div>" + LOGO_LIVRE +
@@ -102,7 +118,7 @@ function ecranConnexion(info = "") {
     const bouton = document.getElementById("btnConnexion");
     bouton.disabled = true;
     bouton.textContent = "Connexion…";
-    const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse });
+    const { error } = await etat.supabase.auth.signInWithPassword({ email, password: motDePasse });
     if (error) {
       bouton.disabled = false;
       bouton.textContent = "Se connecter";
@@ -116,7 +132,7 @@ function ecranConnexion(info = "") {
     const email = document.getElementById("txtEmail").value.trim();
     if (!email) return montrer("Saisissez d'abord votre adresse email, puis cliquez de nouveau sur « Mot de passe oublié ? ».");
     const adresseRetour = location.origin + location.pathname;
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: adresseRetour });
+    const { error } = await etat.supabase.auth.resetPasswordForEmail(email, { redirectTo: adresseRetour });
     if (error) return montrer(messageErreur(error));
     ecranConnexion("Un email vient de vous être envoyé. Cliquez sur le lien qu'il contient pour choisir un nouveau mot de passe.");
   });
@@ -127,7 +143,7 @@ function ecranConnexion(info = "") {
 // ---------------------------------------------------------------------
 
 function ecranNouveauMotDePasse() {
-  racine.innerHTML =
+  racine().innerHTML =
     '<main class="ecran-connexion papier">' +
     '<form class="boite" id="formNouveau" novalidate>' +
     '<h1 class="titre-main moyen">Nouveau mot de passe</h1>' +
@@ -140,53 +156,10 @@ function ecranNouveauMotDePasse() {
   document.getElementById("formNouveau").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const msg = document.getElementById("msgNouveau");
-    const { error } = await supabase.auth.updateUser({ password: document.getElementById("txtNouveau").value });
+    const { error } = await etat.supabase.auth.updateUser({ password: document.getElementById("txtNouveau").value });
     if (error) { msg.textContent = messageErreur(error); msg.hidden = false; return; }
     location.hash = "#/accueil";
   });
-}
-
-// ---------------------------------------------------------------------
-// Mise en page commune (menu lateral sur ordinateur, onglets sur telephone)
-// ---------------------------------------------------------------------
-
-function menus() {
-  const liens = [
-    { route: "accueil", libelle: "Accueil", icone: "accueil" },
-    { route: "apprendre", libelle: "Apprendre", icone: "apprendre" },
-    { route: "parcours", libelle: "Parcours", icone: "parcours" },
-    { route: "documents", libelle: "Mes cours", icone: "documents" },
-  ];
-  if (monProfil.est_parent) liens.push({ route: "parents", libelle: "Parents", icone: "parents" });
-  return liens;
-}
-
-function miseEnPage(routeActive, contenuHtml) {
-  const liens = menus();
-  const initiale = echapper(monProfil.prenom.charAt(0).toUpperCase());
-  const lien = (l, taille) =>
-    '<a href="#/' + l.route + '" class="' + (l.route === routeActive ? "actif" : "") + '">' +
-    icone(l.icone, taille) + "<span>" + l.libelle + "</span></a>";
-
-  racine.innerHTML =
-    '<div class="mise-en-page">' +
-    '<aside class="menu-lateral">' +
-    '<div class="nom-app">Le Gai Savoir</div>' +
-    "<nav>" + liens.map((l) => lien(l, 22)).join("") + "</nav>" +
-    '<div class="profil"><div class="pastille">' + initiale + "</div>" +
-    "<div><b>" + echapper(monProfil.prenom) + "</b><br>" +
-    '<button class="lien-bouton" data-action="deconnexion">Se déconnecter</button></div></div>' +
-    "</aside>" +
-    '<main class="contenu papier"><div class="contenu-interieur">' +
-    '<header class="entete-mobile"><span class="nom-app">Le Gai Savoir</span>' +
-    '<div class="pastille">' + initiale + "</div></header>" +
-    contenuHtml +
-    "</div></main>" +
-    '<nav class="onglets">' + liens.map((l) => lien(l, 24)).join("") + "</nav>" +
-    "</div>";
-
-  racine.querySelectorAll('[data-action="deconnexion"]').forEach((b) =>
-    b.addEventListener("click", () => supabase.auth.signOut()));
 }
 
 // ---------------------------------------------------------------------
@@ -194,26 +167,31 @@ function miseEnPage(routeActive, contenuHtml) {
 // ---------------------------------------------------------------------
 
 function ecranAccueil() {
-  const niveau = monProfil.niveau === "adulte" ? "Adulte" : "Classe de " + monProfil.niveau;
+  const p = etat.profil;
+  const niveau = p.niveau === "adulte" ? "Adulte" : "Classe de " + p.niveau;
   miseEnPage("accueil",
     "<section>" +
-    '<h1 class="titre-main grand">Bonjour ' + echapper(monProfil.prenom) + " !</h1>" +
+    '<h1 class="titre-main grand">Bonjour ' + echapper(p.prenom) + " !</h1>" +
     '<p class="sous-titre">' + echapper(niveau) + " · Que souhaitez-vous faire aujourd'hui ?</p>" +
     "</section>" +
     '<section class="actions">' +
-    '<a class="action lecon" href="#/apprendre">' + icone("lecon", 28) + "Une leçon</a>" +
-    '<a class="action fiche" href="#/apprendre">' + icone("fiche", 28) + "Une fiche</a>" +
-    (monProfil.controles_actifs
-      ? '<a class="action controle" href="#/apprendre">' + icone("controle", 28) + "Un contrôle</a>"
+    '<a class="action lecon" href="#/apprendre/lecon">' + icone("lecon", 28) + "Une leçon</a>" +
+    '<a class="action fiche" href="#/apprendre/fiche">' + icone("fiche", 28) + "Une fiche</a>" +
+    (p.controles_actifs
+      ? '<a class="action controle" href="#/apprendre/controle">' + icone("controle", 28) + "Un contrôle</a>"
       : "") +
     "</section>" +
     '<section class="carte pointillee"><b>Bientôt ici</b><br>' +
     "Vos derniers contrôles, les notions à revoir et vos leçons récentes.</section>" +
     '<button class="bouton rouge ne-pas-imprimer" data-action="deconnexion" style="align-self:flex-start">' +
     icone("sortie", 20) + "Se déconnecter</button>");
+}
 
-  racine.querySelectorAll('[data-action="deconnexion"]').forEach((b) =>
-    b.addEventListener("click", () => supabase.auth.signOut()));
+function ecranBientot(route) {
+  const titres = { parcours: "Mon parcours", documents: "Mes cours", parents: "Espace parents" };
+  miseEnPage(route,
+    '<h1 class="titre-main grand">' + titres[route] + "</h1>" +
+    '<section class="carte pointillee"><b>En construction</b><br>Cet écran arrive dans une prochaine étape.</section>');
 }
 
 // ---------------------------------------------------------------------
@@ -221,13 +199,14 @@ function ecranAccueil() {
 // ---------------------------------------------------------------------
 
 function ecranMessage(titre, texte) {
-  racine.innerHTML =
+  racine().innerHTML =
     '<main class="ecran-connexion papier"><div class="boite carte">' +
     '<h1 class="titre-main moyen">' + echapper(titre) + "</h1>" +
     "<p>" + echapper(texte) + "</p>" +
+    '<a class="bouton" href="#/accueil">Revenir à l\'accueil</a>' +
     '<button class="bouton" id="btnSortir">Se déconnecter</button>' +
     "</div></main>";
-  document.getElementById("btnSortir").addEventListener("click", () => supabase.auth.signOut());
+  document.getElementById("btnSortir").addEventListener("click", () => etat.supabase.auth.signOut());
 }
 
 // ---------------------------------------------------------------------
