@@ -3,7 +3,7 @@
 // =====================================================================
 
 import { echapper } from "../outils.js";
-import { etat, miseEnPage, chargerMatieres, appelerFonction, ecranAttente, ecranErreur } from "../commun.js";
+import { etat, miseEnPage, chargerMatieres, appelerFonction, ecranAttente, ecranErreur, preparerFichier } from "../commun.js";
 
 let documents = [];
 let matieres = [];
@@ -167,19 +167,19 @@ async function ajouter(fichier) {
   if (fichier.size > TAILLE_MAX) return dessiner(true, "Ce fichier dépasse 10 Mo. Choisissez un fichier plus léger.");
   const sb = etat.supabase;
   const matiereId = document.getElementById("cmbMatiereAjout").value || null;
-  const extension = (fichier.name.split(".").pop() || "jpg").toLowerCase();
-  const chemin = etat.profil.id + "/" + crypto.randomUUID() + "." + extension;
 
   try {
-    const { error: eEnvoi } = await sb.storage.from("documents").upload(chemin, fichier, { contentType: fichier.type });
+    const prepare = await preparerFichier(fichier);
+    const chemin = etat.profil.id + "/" + crypto.randomUUID() + "." + prepare.extension;
+    const { error: eEnvoi } = await sb.storage.from("documents").upload(chemin, prepare.blob, { contentType: prepare.type });
     if (eEnvoi) throw eEnvoi;
     const { data: doc, error: eDoc } = await sb.from("documents").insert({
       profil_id: etat.profil.id,
       matiere_id: matiereId,
-      nom: fichier.name || "photo." + extension,
-      type_fichier: fichier.type,
+      nom: prepare.nom,
+      type_fichier: prepare.type,
       chemin_stockage: chemin,
-      taille_octets: fichier.size,
+      taille_octets: prepare.blob.size,
     }).select("id").single();
     if (eDoc) throw eDoc;
     if (matiereId) filtreMatiere = matiereId;

@@ -109,6 +109,8 @@ export async function appelerFonction(nom, corps) {
     try {
       const json = await error.context.json();
       detail = json.erreur ?? JSON.stringify(json);
+      // Detail technique (utile pour comprendre une panne)
+      if (Array.isArray(json.details) && json.details.length) detail += " [" + json.details.join(" | ").slice(0, 400) + "]";
     } catch (e) { /* on garde le message d'origine */ }
     throw new Error(detail);
   }
@@ -153,4 +155,37 @@ export function ecranErreur(route, titre, texte) {
   miseEnPage(route,
     '<section class="carte pointillee"><h1 class="titre-main moyen rouge">' + echapper(titre) + "</h1>" +
     "<p>" + echapper(texte) + '</p><a class="bouton" href="#/accueil">Revenir à l\'accueil</a></section>');
+}
+
+// ---------------------------------------------------------------------
+// Preparation d'un cours avant envoi : les photos sont converties en JPEG
+// (format lu par toutes les IA) et reduites a 2000 pixels au plus.
+// ---------------------------------------------------------------------
+
+const TYPES_PAR_EXTENSION = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", heic: "image/heic", heif: "image/heic", pdf: "application/pdf" };
+
+export async function preparerFichier(fichier) {
+  const extension = (String(fichier.name || "").split(".").pop() || "").toLowerCase();
+  const type = fichier.type || TYPES_PAR_EXTENSION[extension] || "";
+  const nomBase = String(fichier.name || "photo").replace(/\.[^.]+$/, "") || "photo";
+
+  if (type === "application/pdf") return { blob: fichier, type, nom: fichier.name || "document.pdf", extension: "pdf" };
+  if (!type.startsWith("image/") && type !== "") throw new Error("Format non pris en charge : choisissez une photo ou un PDF.");
+
+  try {
+    const image = await createImageBitmap(fichier);
+    const echelle = Math.min(1, 2000 / Math.max(image.width, image.height));
+    const toile = document.createElement("canvas");
+    toile.width = Math.round(image.width * echelle);
+    toile.height = Math.round(image.height * echelle);
+    const ctx = toile.getContext("2d");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, toile.width, toile.height);
+    ctx.drawImage(image, 0, 0, toile.width, toile.height);
+    const blob = await new Promise((ok) => toile.toBlob(ok, "image/jpeg", 0.88));
+    if (blob) return { blob, type: "image/jpeg", nom: nomBase + ".jpg", extension: "jpg" };
+  } catch (e) { /* image illisible par le navigateur (ex. HEIC) : on envoie l'original */ }
+
+  if (!type) throw new Error("Format de fichier inconnu : choisissez une photo (JPEG, PNG) ou un PDF.");
+  return { blob: fichier, type, nom: fichier.name || "photo." + extension, extension: extension || "jpg" };
 }

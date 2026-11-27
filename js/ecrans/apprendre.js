@@ -4,7 +4,7 @@
 // =====================================================================
 
 import { echapper } from "../outils.js";
-import { etat, miseEnPage, entete, chargerMatieres, appelerFonction, ecranErreur } from "../commun.js";
+import { etat, miseEnPage, entete, chargerMatieres, appelerFonction, ecranErreur, preparerFichier } from "../commun.js";
 
 const NIVEAUX = ["CP", "CE1", "CE2", "CM1", "CM2", "6e", "5e", "4e", "3e", "2nde", "1re", "Tle", "adulte"];
 const NB_MATIERES_VISIBLES = 6;
@@ -216,25 +216,24 @@ async function envoyerDocument(fichier, matieres) {
 
   const sb = etat.supabase;
   const matiere = matieres.find((m) => m.code === choix.matiere);
-  const extension = (fichier.name.split(".").pop() || "jpg").toLowerCase();
-  const chemin = etat.profil.id + "/" + crypto.randomUUID() + "." + extension;
-  const nom = fichier.name || "photo." + extension;
 
   // Ligne provisoire pendant l'envoi
-  const provisoire = { id: "envoi", nom, statut: "a_lire" };
+  const provisoire = { id: "envoi", nom: fichier.name || "photo", statut: "a_lire" };
   documents.unshift(provisoire);
   rafraichirDocuments(matieres);
 
   try {
-    const { error: eEnvoi } = await sb.storage.from("documents").upload(chemin, fichier, { contentType: fichier.type });
+    const prepare = await preparerFichier(fichier);
+    const chemin = etat.profil.id + "/" + crypto.randomUUID() + "." + prepare.extension;
+    const { error: eEnvoi } = await sb.storage.from("documents").upload(chemin, prepare.blob, { contentType: prepare.type });
     if (eEnvoi) throw eEnvoi;
     const { data: doc, error: eDoc } = await sb.from("documents").insert({
       profil_id: etat.profil.id,
       matiere_id: matiere ? matiere.id : null,
-      nom,
-      type_fichier: fichier.type,
+      nom: prepare.nom,
+      type_fichier: prepare.type,
       chemin_stockage: chemin,
-      taille_octets: fichier.size,
+      taille_octets: prepare.blob.size,
     }).select("id").single();
     if (eDoc) throw eDoc;
 
