@@ -78,6 +78,7 @@ async function afficher() {
       case "documents":
         return (await import("./ecrans/documents.js")).ecranDocuments();
       case "parents":
+        if (parametre === "reglages") return (await import("./ecrans/reglages.js")).ecranReglages();
         return (await import("./ecrans/parents.js")).ecranParents();
       case "accueil":
       default:
