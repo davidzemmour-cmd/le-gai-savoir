@@ -5,5 +5,5 @@
 // Les cles des IA ne sont JAMAIS ici : elles sont dans les Secrets Supabase.
 // =====================================================================
 
-export const SUPABASE_URL = "A_REMPLACER_PAR_L_URL_DU_PROJET";
-export const SUPABASE_CLE_PUBLIQUE = "A_REMPLACER_PAR_LA_PUBLISHABLE_KEY";
+export const SUPABASE_URL = "https://oeccqfasbultizkgumvu.supabase.co";
+export const SUPABASE_CLE_PUBLIQUE = "sb_publishable_g8S3S0Cc48NqmscZtXHXIg_O5i8W7Dy";
