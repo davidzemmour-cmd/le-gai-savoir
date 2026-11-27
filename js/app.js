@@ -173,7 +173,7 @@ function ecranNouveauMotDePasse() {
     (etat.bienvenue
       ? '<div>' + LOGO_LIVRE + '<h1 class="titre-main grand">Bienvenue !</h1>' +
         '<p class="sous-titre">Choisissez votre mot de passe pour entrer dans Le Gai Savoir.</p></div>'
-      : '<h1 class="titre-main moyen">Nouveau mot de passe</h1>') +
+      : '<h1 class="titre-main moyen">Nouveau mot de passe</h1>' + '<a class="lien-bouton" href="#/accueil">Annuler</a>') +
     '<div class="message erreur" id="msgNouveau" hidden></div>' +
     '<div class="champ"><label for="txtNouveau">Choisissez un mot de passe (6 caractères au moins)</label>' +
     '<input id="txtNouveau" type="password" autocomplete="new-password" required></div>' +
@@ -217,7 +217,10 @@ async function ecranAccueil() {
       ? '<a class="action controle" href="#/apprendre/controle">' + icone("controle", 28) + "Un contrôle</a>"
       : "") +
     "</section>" +
-    '<div id="zoneAccueil" class="accueil-suite"></div>');
+    '<div id="zoneAccueil" class="accueil-suite"></div>' +
+    '<div class="barre-actions ne-pas-imprimer">' +
+    '<a class="bouton" href="#/nouveau-mot-de-passe">Changer mon mot de passe</a>' +
+    '<button class="bouton rouge" data-action="deconnexion">' + icone("sortie", 20) + "Se déconnecter</button></div>");
 
   const zone = document.getElementById("zoneAccueil");
   try {

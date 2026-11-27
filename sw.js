@@ -3,7 +3,7 @@
 // la copie locale ne sert que si le reseau est coupe.
 // Les appels a Supabase ne sont jamais mis en cache.
 
-const CACHE = "gai-savoir-v13";
+const CACHE = "gai-savoir-v14";
 
 self.addEventListener("install", () => self.skipWaiting());
 
