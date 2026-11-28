@@ -178,13 +178,36 @@ async function ecranConversation(cle) {
     let html = "";
     if (j !== dernierJour) { html += '<div class="separateur-jour">' + j + "</div>"; dernierJour = j; }
     const mien = m.auteur_id === moi;
-    html += '<div class="bulle ' + (mien ? "mienne" : "autre") + '">' +
+    html += '<div class="bulle ' + (mien ? "mienne" : "autre") + '" data-message="' + m.id + '">' +
       (!mien && famille ? '<span class="auteur">' + echapper(prenom(m.auteur_id)) + "</span>" : "") +
       puceLien(m.lien_type, m.lien_id, m.lien_titre) +
       '<span class="texte-bulle">' + echapper(m.texte) + "</span>" +
-      '<span class="heure">' + heure(m.date_creation) + "</span></div>";
+      '<span class="pied-bulle">' +
+      (mien ? '<button type="button" class="supprimer-message" data-supprimer-message="' + m.id + '" aria-label="Supprimer ce message">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" ' +
+        'stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>' : "") +
+      '<span class="heure">' + heure(m.date_creation) + "</span></span></div>";
     fil.insertAdjacentHTML("beforeend", html);
   };
+
+  // Suppression de ses propres messages
+  fil.addEventListener("click", async (ev) => {
+    const b = ev.target.closest("[data-supprimer-message]");
+    if (!b) return;
+    if (!confirm("Supprimer ce message ? Il disparaîtra aussi chez " + (famille ? "toute la famille" : titre) + ".")) return;
+    const id = b.dataset.supprimerMessage;
+    const { data: supprimes, error: eSup } = await etat.supabase.from("messages_famille").delete().eq("id", id).select("id");
+    // Sans le script 11, Supabase ne supprime rien, sans erreur : on le detecte
+    if (eSup || !supprimes || supprimes.length === 0) {
+      const msg = document.getElementById("msgEnvoi");
+      msg.textContent = eSup
+        ? "Suppression impossible : " + eSup.message
+        : "Suppression impossible : exécutez d'abord le script 11 dans Supabase.";
+      msg.hidden = false;
+      return;
+    }
+    fil.querySelector('[data-message="' + id + '"]')?.remove();
+  });
 
   const messages = (data ?? []).reverse();
   if (messages.length === 0) {

@@ -252,6 +252,12 @@ export function demarrerMessagerie() {
           afficherCompteur();
         }
       })
+    .on("postgres_changes",
+      { event: "DELETE", schema: "public", table: "messages_famille" },
+      (charge) => {
+        const id = charge.old && charge.old.id;
+        if (id) document.querySelectorAll('[data-message="' + id + '"]').forEach((el) => el.remove());
+      })
     .subscribe();
 }
 

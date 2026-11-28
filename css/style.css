@@ -632,7 +632,10 @@ button, input, select, textarea { font: inherit; }
 .bulle.mienne { align-self: flex-end; background: var(--encre); color: #FFFFFF; border-bottom-right-radius: 4px; }
 .bulle .auteur { font-size: 12px; font-weight: 800; color: var(--rouge-fonce); }
 .bulle .texte-bulle { white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere; }
-.bulle .heure { align-self: flex-end; font-size: 11px; opacity: 0.7; }
+.bulle .pied-bulle { align-self: flex-end; display: flex; align-items: center; gap: 6px; }
+.bulle .heure { font-size: 11px; opacity: 0.7; }
+.supprimer-message { width: 32px; height: 28px; border: none; background: transparent; color: inherit; opacity: 0.6; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.supprimer-message:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 .puce-lien { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; max-width: 100%; }
 .puce-lien a {
   display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 13px; font-weight: 800;
