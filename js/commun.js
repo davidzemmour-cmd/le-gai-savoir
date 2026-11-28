@@ -305,8 +305,13 @@ export async function inviterMembre(profilId) {
   try {
     r = await appelerFonction("inviter-membre", { profil_id: profilId });
   } catch (e) {
-    dialogue.innerHTML = '<h2 class="titre-main moyen rouge">Invitation impossible</h2>' +
-      "<p>" + echapper(e.message) + "</p>" +
+    const dejaConnecte = /deja connecte/i.test(e.message);
+    dialogue.innerHTML = '<h2 class="titre-main moyen' + (dejaConnecte ? "" : " rouge") + '">' +
+      (dejaConnecte ? "Pas besoin d'invitation" : "Invitation impossible") + "</h2>" +
+      "<p>" + echapper(dejaConnecte
+        ? e.message.replace(/ \[.*$/, "").replace("deja", "déjà").replace("s'est deja", "s'est déjà") +
+          ". S'il a oublié son mot de passe, utilisez le script 09 dans Supabase pour lui en donner un provisoire."
+        : e.message) + "</p>" +
       '<div class="barre-actions"><button class="bouton" data-fermer>Fermer</button></div>';
     dialogue.querySelector("[data-fermer]").addEventListener("click", () => dialogue.close());
     return;

@@ -59,7 +59,10 @@ function dessiner(garderDefilement = false) {
       '<div class="texte"><b>' + echapper(p.prenom) + "</b>" +
       '<span class="details">' + (p.est_parent ? "Parent" : "Enfant") + (p.email ? " · " + echapper(p.email) : "") +
       (p.user_id ? "" : ' · <span class="a-terminer">compte pas encore créé</span>') + "</span>" +
-      (p.user_id || p.id === etat.profil.id ? "" : '<button type="button" class="bouton petit ocre bouton-inviter" data-inviter="' + p.id + '">Inviter ' + echapper(p.prenom) + "</button>") +
+      // Toujours proposee (sauf pour soi) : un compte cree par une invitation n'est
+      // pas forcement utilise ; le serveur refuse si le membre s'est deja connecte.
+      (p.id === etat.profil.id ? "" : '<button type="button" class="bouton petit ocre bouton-inviter" data-inviter="' + p.id + '">' +
+        (p.user_id ? "Renvoyer une invitation à " : "Inviter ") + echapper(p.prenom) + "</button>") +
       "</div>" +
       '<div class="commandes">' +
       '<select class="saisie petit" data-niveau="' + p.id + '" aria-label="Classe de ' + echapper(p.prenom) + '">' +
