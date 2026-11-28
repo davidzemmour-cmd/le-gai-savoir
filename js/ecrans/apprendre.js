@@ -323,12 +323,16 @@ async function preparer(matieres) {
     dessinerProgression();
 
     let verifie = true;
+    let raison = "";
     try {
       const relu = await appelerFonction("relire-contenu", { type: redige.type, id: redige.id });
       verifie = !!(relu.relecture && relu.relecture.effectuee);
+      if (!verifie) raison = "relecture écartée" + (relu.relecture && relu.relecture.ecartee ? " (" + relu.relecture.ecartee + ")" : "");
     } catch (e) {
       verifie = false;
+      raison = e.message;
     }
+    try { sessionStorage.setItem("gai-savoir-raison-" + redige.id, raison); } catch (x) { /* rien */ }
     etatEtapes.relecture = verifie ? "fait" : "saute";
     dessinerProgression();
 

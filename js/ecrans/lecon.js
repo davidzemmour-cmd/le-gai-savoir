@@ -5,20 +5,67 @@
 import { echapper } from "../outils.js";
 import {
   etat, miseEnPage, entete, markdown, figure, blocSources, libelleMatiere, libelleNiveau,
-  dateCourte, ecranAttente, ecranErreur, boutonMessage, brancherBoutonMessage,
+  dateCourte, ecranAttente, ecranErreur, boutonMessage, brancherBoutonMessage, appelerFonction,
 } from "../commun.js";
 
 function avertissementVerification(id) {
-  let verifie = "1";
-  try { verifie = sessionStorage.getItem("gai-savoir-verifie-" + id) ?? "1"; } catch (e) { /* rien */ }
+  let verifie = "1", raison = "";
+  try {
+    verifie = sessionStorage.getItem("gai-savoir-verifie-" + id) ?? "1";
+    raison = sessionStorage.getItem("gai-savoir-raison-" + id) ?? "";
+  } catch (e) { /* rien */ }
   return verifie === "0"
     ? '<div class="message info ne-pas-imprimer">La vérification par une seconde IA n\'a pas pu être faite : ' +
-      "ce contenu n'a pas été relu.</div>"
+      "ce contenu n'a pas été relu." + (raison ? '<br><small>Raison : ' + echapper(raison) + "</small>" : "") +
+      "<br>Utilisez le bouton « Faire vérifier » en bas de la page pour réessayer.</div>"
     : "";
 }
 
-function barreActions() {
-  return '<div class="barre-actions ne-pas-imprimer">' +
+// Relance de la verification (relecture) d'une lecon ou d'une fiche
+function brancherVerification(type, id, reafficher) {
+  const bouton = document.querySelector('[data-action="verifier"]');
+  if (!bouton) return;
+  bouton.addEventListener("click", async () => {
+    const zone = document.getElementById("msgVerification");
+    bouton.disabled = true;
+    const debut = Date.now();
+    const minuteur = setInterval(() => {
+      bouton.textContent = "Vérification… " + Math.round((Date.now() - debut) / 1000) + " s";
+    }, 1000);
+    bouton.textContent = "Vérification…";
+    try {
+      const r = await appelerFonction("relire-contenu", { type, id });
+      clearInterval(minuteur);
+      const ok = !!(r.relecture && r.relecture.effectuee);
+      try {
+        sessionStorage.setItem("gai-savoir-verifie-" + id, ok ? "1" : "0");
+        sessionStorage.setItem("gai-savoir-raison-" + id, ok ? "" : "relecture écartée" +
+          (r.relecture && r.relecture.ecartee ? " (" + r.relecture.ecartee + ")" : ""));
+      } catch (e) { /* rien */ }
+      await reafficher();
+      const z = document.getElementById("msgVerification");
+      if (z && ok) {
+        z.className = "message info";
+        const nb = Array.isArray(r.relecture.corrections_apportees) ? r.relecture.corrections_apportees.length : 0;
+        z.textContent = "Vérification terminée par " + (r.relecture.ia || "une seconde IA") +
+          (nb ? " : " + nb + " correction" + (nb > 1 ? "s" : "") + " apportée" + (nb > 1 ? "s" : "") + "." : ", sans correction nécessaire.");
+        z.hidden = false;
+      }
+    } catch (e) {
+      clearInterval(minuteur);
+      bouton.disabled = false;
+      bouton.textContent = "Faire vérifier";
+      zone.className = "message erreur";
+      zone.textContent = "La vérification a échoué : " + e.message;
+      zone.hidden = false;
+    }
+  });
+}
+
+function barreActions(proprietaire) {
+  return '<div class="message info" id="msgVerification" hidden></div>' +
+    '<div class="barre-actions ne-pas-imprimer">' +
+    (proprietaire === etat.profil.id ? '<button class="bouton" data-action="verifier">Faire vérifier</button>' : "") +
     '<button class="bouton" data-action="imprimer">' +
     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
     'stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>Imprimer</button>' +
@@ -60,9 +107,10 @@ export async function ecranLecon(id) {
     '<div class="texte-cours">' + markdown(contenu) + "</div>" +
     blocSources(l.sources) +
     "</article>" +
-    barreActions());
+    barreActions(l.profil_id));
   brancherImpression();
   brancherBoutonMessage({ type: "lecon", id: l.id, titre }, l.profil_id);
+  brancherVerification("lecon", l.id, () => ecranLecon(l.id));
 }
 
 // ---------------------------------------------------------------------
@@ -140,7 +188,8 @@ export async function ecranFiche(id) {
     corps +
     blocSources(sources) +
     "</article>" +
-    barreActions());
+    barreActions(f.profil_id));
   brancherImpression();
   brancherBoutonMessage({ type: "fiche", id: f.id, titre: c.titre || f.theme }, f.profil_id);
+  brancherVerification("fiche", f.id, () => ecranFiche(f.id));
 }
